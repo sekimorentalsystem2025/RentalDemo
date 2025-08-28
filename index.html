@@ -88,9 +88,9 @@
           <label class="car-type"><input type="radio" name="carType" value="小型ミニバン">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 12h20v5H2v-5zm2-5h14l4 4v1H2V9a2 2 0 0 1 2-2z"/></svg>
             小型ミニバン<span class="stock" id="stock-m">残:2</span></label>
-          <label class="car-type"><input type="radio" name="carType" value="大型ミニバン">
+          <label class="car-type"><input type="radio" name="carType" value="中型ミニバン">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 10h18v7H3v-7zm2-4h14a2 2 0 0 1 2 2v2H3V8a2 2 0 0 1 2-2z"/></svg>
-            大型ミニバン<span class="stock" id="stock-b">残:1</span></label>
+            中型ミニバン<span class="stock" id="stock-b">残:1</span></label>
         </div>
       </div>
 
@@ -145,7 +145,7 @@
 
   <script>
     // 料金テーブル
-    const RATES={"軽自動車":5000,"普通車":6600,"小型ミニバン":8800,"大型ミニバン":13000};
+    const RATES={"軽自動車":5000,"普通車":6600,"小型ミニバン":8800,"中型ミニバン":13000};
     const OPTION_RATES={ childSeatPerDay:500 };
 
     // 車種選択の見た目反映
@@ -267,29 +267,4 @@
 
     // 送信（デモ）
     const form=document.getElementById('bookingForm');
-    form.addEventListener('submit',e=>{
-      e.preventDefault();
-      const data={
-        startDate:form.dateStart.value,
-        endDate:form.dateEnd.value,
-        startPeriod:document.getElementById('startPeriod').value,
-        endPeriod:document.getElementById('endPeriod').value,
-        days:getDays(),
-        carType:form.carType.value,
-        name:form.name.value,
-        zip:form.zip.value,
-        address:form.addrAuto.value,
-        addressDetail:form.addrMore.value,
-        mobile:form.tel.value,
-        agreePrivacy:document.getElementById('agreePrivacy').checked,
-        childSeat:form.optChild.checked
-      };
-      document.getElementById('result').style.display='block';
-      document.getElementById('result').textContent=JSON.stringify(data,null,2);
-    });
-
-    // 初期計算
-    updateEstimate();
-  </script>
-</body>
-</html>
+    form
