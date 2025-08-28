@@ -34,6 +34,9 @@
     .estimate-section{border:1px solid #ccc;padding:12px;border-radius:8px;background:#fff}
     .estimate-section legend{font-weight:700;font-size:14px;margin-bottom:8px}
     #estimate{font-size:14px;color:#222;font-weight:700;margin-top:4px}
+    .breakdown{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:13px;line-height:1.5;margin-top:8px;white-space:pre}
+    .estimate-actions{display:flex;gap:8px;margin-top:8px}
+    .hidden{display:none}
     button{padding:12px;border:none;border-radius:8px;font-weight:700;cursor:pointer}
     .btn-primary{background:#007bff;color:#fff;width:100%;margin-top:30px}
     .btn-secondary{background:#f3f3f3;color:#333}
@@ -77,27 +80,31 @@
         <div class="car-types">
           <label class="car-type"><input type="radio" name="carType" value="軽自動車">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h18v3H3v-3zm2-5h14a2 2 0 0 1 2 2v2H3V10a2 2 0 0 1 2-2z"/></svg>
-            軽自動車（1日:5000円）<span class="stock" id="stock-k">残:5</span></label>
+            軽自動車<span class="stock" id="stock-k">残:5</span></label>
           <label class="car-type"><input type="radio" name="carType" value="普通車">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 11h16v5H4v-5zm2-4h12a2 2 0 0 1 2 2v2H4V9a2 2 0 0 1 2-2z"/></svg>
-            普通車（1日:6600円）<span class="stock" id="stock-n">残:3</span></label>
+            普通車<span class="stock" id="stock-n">残:3</span></label>
           <label class="car-type"><input type="radio" name="carType" value="小型ミニバン">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 12h20v5H2v-5zm2-5h14l4 4v1H2V9a2 2 0 0 1 2-2z"/></svg>
-            小型ミニバン（1日:8800円）<span class="stock" id="stock-m">残:2</span></label>
+            小型ミニバン<span class="stock" id="stock-m">残:2</span></label>
           <label class="car-type"><input type="radio" name="carType" value="大型ミニバン">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 10h18v7H3v-7zm2-4h14a2 2 0 0 1 2 2v2H3V8a2 2 0 0 1 2-2z"/></svg>
-            大型ミニバン（1日:13000円）<span class="stock" id="stock-b">残:1</span></label>
+            大型ミニバン<span class="stock" id="stock-b">残:1</span></label>
         </div>
       </div>
       <fieldset class="options-section">
         <legend>オプション</legend>
         <div class="option-item">
-          <label><input type="checkbox" id="optChild" name="optChild" class="checkbox">チャイルドシート（500円/日）</label>
+          <label><input type="checkbox" id="optChild" name="optChild" class="checkbox">チャイルドシート</label>
         </div>
       </fieldset>
       <fieldset class="estimate-section">
         <legend>概算料金</legend>
-        <div id="estimate">概算料金: 0円</div>
+        <div id="estimate">概算料金: 0円（税込）</div>
+        <div class="estimate-actions">
+          <button type="button" id="toggleBreakdownBtn" class="btn-secondary">内訳を表示</button>
+        </div>
+        <div id="breakdown" class="breakdown hidden"></div>
       </fieldset>
       <button type="button" id="showMoreBtn" class="btn-secondary">上記内容で予約する</button>
       <div id="moreFields" class="hidden-section">
@@ -127,6 +134,10 @@
     </form>
   </div>
   <script>
+    // 料金テーブル（UIには表示しない）
+    const RATES = {"軽自動車":5000,"普通車":6600,"小型ミニバン":8800,"大型ミニバン":13000};
+    const OPTION_RATES = { childSeatPerDay: 500 };
+
     // 車種選択の見た目反映
     document.querySelectorAll('.car-type input').forEach(radio=>{
       radio.addEventListener('change', e=>{
@@ -184,31 +195,46 @@
       return units>0 ? units/2 : 0;
     }
 
-    function updateEstimate(){
+    function calcQuote(){
       const units = getUnits();
-      if(units>0){
-        const days = units/2;
-        diffEl.textContent = `利用コマ: ${units}（半日単位）／日換算: ${days}日`;
+      const days = units>0 ? units/2 : 0;
+      const car = document.querySelector('input[name="carType"]:checked');
+      const type = car ? car.value : null;
+      const base = (days>0 && type) ? Math.round(days * RATES[type]) : 0;
+      const optChild = document.getElementById('optChild').checked ? Math.round(days * OPTION_RATES.childSeatPerDay) : 0;
+      const subtotal = base + optChild;
+      const tax = Math.floor(subtotal * 0.10); // 10%（デモ：切り捨て）
+      const total = subtotal + tax;
+      return { units, days, type, base, optChild, subtotal, tax, total };
+    }
+
+    function renderBreakdown(q){
+      const bd = document.getElementById('breakdown');
+      if(!q || !q.type){ bd.textContent=''; return; }
+      const lines = [];
+      lines.push(`車種(${q.type})\t: ${q.base.toLocaleString()}円`);
+      lines.push(`オプション\t: ${q.optChild.toLocaleString()}円`);
+      lines.push(`小計\t\t: ${q.subtotal.toLocaleString()}円`);
+      lines.push(`消費税(10%)\t: ${q.tax.toLocaleString()}円`);
+      lines.push('------------------------------');
+      lines.push(`合計\t\t: ${q.total.toLocaleString()}円（税込）`);
+      bd.textContent = lines.join('\n');
+    }
+
+    function updateEstimate(){
+      const q = calcQuote();
+      if(q.units>0){
+        diffEl.textContent = `利用コマ: ${q.units}（半日単位）／日換算: ${q.days}日`;
       }else{
         diffEl.textContent = '';
       }
-      const car=document.querySelector('input[name="carType"]:checked');
-      if(car){
-        const type=car.value;
-        const rates={"軽自動車":5000,"普通車":6600,"小型ミニバン":8800,"大型ミニバン":13000};
-        let price=0;
-        if(units>0){
-          const days = units/2;
-          price=days*rates[type];
-          if(document.getElementById('optChild').checked){
-            price+=days*500;
-          }
-          estimateEl.textContent=`概算料金: ${price.toLocaleString()}円`;
-        }else{
-          estimateEl.textContent='概算料金: 0円';
-        }
+      if(q.type){
+        estimateEl.textContent = `概算料金: ${q.total.toLocaleString()}円（税込）`;
       }else{
-        estimateEl.textContent='概算料金: 0円';
+        estimateEl.textContent = '概算料金: 0円（税込）';
+      }
+      if(!document.getElementById('breakdown').classList.contains('hidden')){
+        renderBreakdown(q);
       }
     }
 
@@ -222,6 +248,16 @@
     document.getElementById('showMoreBtn').addEventListener('click',()=>{
       document.getElementById('moreFields').style.display='block';
       document.getElementById('showMoreBtn').style.display='none';
+    });
+
+    // 内訳トグル
+    document.getElementById('toggleBreakdownBtn').addEventListener('click',()=>{
+      const el=document.getElementById('breakdown');
+      el.classList.toggle('hidden');
+      document.getElementById('toggleBreakdownBtn').textContent = el.classList.contains('hidden') ? '内訳を表示' : '内訳を隠す';
+      if(!el.classList.contains('hidden')){
+        renderBreakdown(calcQuote());
+      }
     });
 
     // 郵便番号入力で住所自動入力（簡易デモ）
