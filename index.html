@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>レンタカー予約（デモ）</title>
+  <title>レンタカー予約（デモ・別版）</title>
   <style>
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:#f8f9fa;color:#222}
     .wrap{max-width:640px;margin:0 auto;padding:16px}
@@ -53,7 +53,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>レンタカー予約（デモ）</h1>
+    <h1>レンタカー予約（デモ・別版）</h1>
     <form id="bookingForm">
       <div class="dates">
         <div class="date-field">
@@ -267,4 +267,29 @@
 
     // 送信（デモ）
     const form=document.getElementById('bookingForm');
-    form
+    form.addEventListener('submit',e=>{
+      e.preventDefault();
+      const data={
+        startDate:form.dateStart.value,
+        endDate:form.dateEnd.value,
+        startPeriod:document.getElementById('startPeriod').value,
+        endPeriod:document.getElementById('endPeriod').value,
+        days:getDays(),
+        carType:form.carType.value,
+        name:form.name.value,
+        zip:form.zip.value,
+        address:form.addrAuto.value,
+        addressDetail:form.addrMore.value,
+        mobile:form.tel.value,
+        agreePrivacy:document.getElementById('agreePrivacy').checked,
+        childSeat:form.optChild.checked
+      };
+      document.getElementById('result').style.display='block';
+      document.getElementById('result').textContent=JSON.stringify(data,null,2);
+    });
+
+    // 初期計算
+    updateEstimate();
+  </script>
+</body>
+</html>
