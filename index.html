@@ -11,7 +11,7 @@
     form{display:flex;flex-direction:column;gap:16px}
     label{font-weight:700;font-size:14px;margin-bottom:4px;display:block}
     input,button,select{font:inherit}
-    input[type="text"],input[type="date"],input[type="tel"]{
+    input[type="text"],input[type="date"],input[type="tel"],select{
       width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box
     }
     .dates{display:flex;align-items:flex-end;gap:8px}
@@ -28,14 +28,10 @@
     .car-type.selected{border-color:#007bff;background:#e7f0ff}
     .stock{font-size:11px;color:#555;position:absolute;bottom:4px;right:6px}
     .checkbox{margin-right:8px}
-    .options-section{border:1px solid #ccc;padding:12px;border-radius:8px;background:#fff}
-    .options-section legend{font-weight:700;font-size:14px;margin-bottom:8px}
-    .option-item{margin-bottom:6px}
-    .estimate-section{border:1px solid #ccc;padding:12px;border-radius:8px;background:#fff}
-    .estimate-section legend{font-weight:700;font-size:14px;margin-bottom:8px}
-    #estimate{font-size:14px;color:#222;font-weight:700;margin-top:4px}
+    fieldset{border:1px solid #ccc;padding:12px;border-radius:8px;background:#fff}
+    fieldset legend{font-weight:700;font-size:14px;margin-bottom:8px}
+    .estimate-section #estimate{font-size:14px;color:#222;font-weight:700;margin-top:4px}
     .breakdown{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:13px;line-height:1.5;margin-top:8px;white-space:pre}
-    .estimate-actions{display:flex;gap:8px;margin-top:8px}
     .hidden{display:none}
     button{padding:12px;border:none;border-radius:8px;font-weight:700;cursor:pointer}
     .btn-primary{background:#007bff;color:#fff;width:100%;margin-top:30px}
@@ -43,6 +39,10 @@
     .result{margin-top:16px;padding:12px;border:1px solid #ccc;border-radius:8px;background:#fafafa;white-space:pre-wrap}
     .days-diff{font-size:13px;color:#555;margin-top:4px}
     .hidden-section{display:none}
+    .note{font-size:13px;color:#333;margin:-4px 0 8px}
+    .privacy-section{border:1px solid #ccc;padding:12px;border-radius:8px;background:#fff;margin-top:8px}
+    .privacy-section legend{font-weight:700;font-size:14px;margin-bottom:6px}
+    .small{font-size:12px;color:#555;margin:0 0 6px}
     @media(max-width:480px){
       .car-types{gap:6px}
       .car-type{padding:6px}
@@ -59,7 +59,7 @@
         <div class="date-field">
           <label for="dateStart">ご利用開始日</label>
           <input id="dateStart" name="dateStart" type="date" required>
-          <select id="startPeriod" aria-label="開始時間帯" style="margin-top:8px;padding:8px;border:1px solid #ccc;border-radius:8px;">
+          <select id="startPeriod" aria-label="開始時間帯" style="margin-top:8px;">
             <option value="AM" selected>午前（AM）</option>
             <option value="PM">午後（PM）</option>
           </select>
@@ -68,13 +68,14 @@
         <div class="date-field">
           <label for="dateEnd">ご利用終了日</label>
           <input id="dateEnd" name="dateEnd" type="date" required>
-          <select id="endPeriod" aria-label="終了時間帯" style="margin-top:8px;padding:8px;border:1px solid #ccc;border-radius:8px;">
+          <select id="endPeriod" aria-label="終了時間帯" style="margin-top:8px;">
             <option value="AM">午前（AM）</option>
             <option value="PM" selected>午後（PM）</option>
           </select>
         </div>
       </div>
       <div id="daysDiff" class="days-diff"></div>
+
       <div>
         <label>車種を選択</label>
         <div class="car-types">
@@ -92,22 +93,24 @@
             大型ミニバン<span class="stock" id="stock-b">残:1</span></label>
         </div>
       </div>
+
       <fieldset class="options-section">
         <legend>オプション</legend>
         <div class="option-item">
           <label><input type="checkbox" id="optChild" name="optChild" class="checkbox">チャイルドシート</label>
         </div>
       </fieldset>
+
       <fieldset class="estimate-section">
-        <legend>概算料金</legend>
-        <div id="estimate">概算料金: 0円（税込）</div>
-        <div class="estimate-actions">
-          <button type="button" id="toggleBreakdownBtn" class="btn-secondary">内訳を表示</button>
-        </div>
+        <legend>料金お見積り</legend>
+        <div id="estimate">料金お見積り: 0円（税込）</div>
+        <button type="button" id="toggleBreakdownBtn" class="btn-secondary" style="margin-top:8px">内訳を表示</button>
         <div id="breakdown" class="breakdown hidden"></div>
       </fieldset>
+
       <button type="button" id="showMoreBtn" class="btn-secondary">上記内容で予約する</button>
       <div id="moreFields" class="hidden-section">
+        <p class="note">ご予約されるかたのお名前、住所、ご連絡先をご記入ください。</p>
         <div>
           <label for="name">お名前</label>
           <input id="name" name="name" type="text" required>
@@ -128,15 +131,22 @@
           <label for="tel">携帯番号</label>
           <input id="tel" name="tel" type="tel" placeholder="090-1234-5678" required>
         </div>
-        <button class="btn-primary" type="submit">予約内容を送信（デモ）</button>
+        <fieldset class="privacy-section">
+          <legend>個人情報の取り扱いに関する同意</legend>
+          <p class="small">当社のプライバシーポリシーに基づき、お預かりした個人情報は予約手続きおよび連絡目的のみに使用します。</p>
+          <label><input type="checkbox" id="agreePrivacy" required> 同意します</label>
+        </fieldset>
+        <button class="btn-primary" type="submit">予約内容の確認（デモ）</button>
       </div>
+
       <div id="result" class="result" style="display:none"></div>
     </form>
   </div>
+
   <script>
-    // 料金テーブル（UIには表示しない）
-    const RATES = {"軽自動車":5000,"普通車":6600,"小型ミニバン":8800,"大型ミニバン":13000};
-    const OPTION_RATES = { childSeatPerDay: 500 };
+    // 料金テーブル
+    const RATES={"軽自動車":5000,"普通車":6600,"小型ミニバン":8800,"大型ミニバン":13000};
+    const OPTION_RATES={ childSeatPerDay:500 };
 
     // 車種選択の見た目反映
     document.querySelectorAll('.car-type input').forEach(radio=>{
@@ -147,104 +157,90 @@
       });
     });
 
-    // 日付関連
+    // 要素参照
     const startEl=document.getElementById('dateStart');
     const endEl=document.getElementById('dateEnd');
     const diffEl=document.getElementById('daysDiff');
     const estimateEl=document.getElementById('estimate');
 
-    // 初期値を今日と翌日に設定
-    const today=new Date();
-    const yyyy=today.getFullYear();
-    const mm=String(today.getMonth()+1).padStart(2,'0');
-    const dd=String(today.getDate()).padStart(2,'0');
-    startEl.value=`${yyyy}-${mm}-${dd}`;
-
-    const tomorrow=new Date(today);
-    tomorrow.setDate(tomorrow.getDate()+1);
-    const mm2=String(tomorrow.getMonth()+1).padStart(2,'0');
-    const dd2=String(tomorrow.getDate()).padStart(2,'0');
-    endEl.value=`${tomorrow.getFullYear()}-${mm2}-${dd2}`;
-
-    function updateConstraints(){
-      if(startEl.value){
-        endEl.min=startEl.value;
-      }else{
-        endEl.removeAttribute('min');
-      }
-      updateEstimate();
-    }
+    // 初期値: 開始=今日、終了=翌日
+    (function initDates(){
+      const today=new Date();
+      const yyyy=today.getFullYear();
+      const mm=String(today.getMonth()+1).padStart(2,'0');
+      const dd=String(today.getDate()).padStart(2,'0');
+      startEl.value=`${yyyy}-${mm}-${dd}`;
+      const t=new Date(today);t.setDate(t.getDate()+1);
+      const mm2=String(t.getMonth()+1).padStart(2,'0');
+      const dd2=String(t.getDate()).padStart(2,'0');
+      endEl.value=`${t.getFullYear()}-${mm2}-${dd2}`;
+    })();
 
     function getUnits(){
       if(startEl.value && endEl.value){
-        const s = new Date(startEl.value);
-        const e = new Date(endEl.value);
-        const msPerDay = 24*60*60*1000;
-        const dayDiff = Math.round((e - s)/msPerDay);
-        const startOffset = (document.getElementById('startPeriod').value === 'PM') ? 1 : 0;
-        const endOffset   = (document.getElementById('endPeriod').value === 'PM') ? 1 : 0;
-        let units = dayDiff*2 + (endOffset - startOffset) + 1;
-        if(units < 1) units = 1;
+        const s=new Date(startEl.value);
+        const e=new Date(endEl.value);
+        const msPerDay=24*60*60*1000;
+        const dayDiff=Math.round((e-s)/msPerDay);
+        const startOffset=(document.getElementById('startPeriod').value==='PM')?1:0;
+        const endOffset=(document.getElementById('endPeriod').value==='PM')?1:0;
+        let units=dayDiff*2+(endOffset-startOffset)+1; // 最小1コマ
+        if(units<1) units=1;
         return units;
       }
       return 0;
     }
-
-    function getDays(){
-      const units = getUnits();
-      return units>0 ? units/2 : 0;
-    }
+    function getDays(){const u=getUnits();return u>0?u/2:0;}
 
     function calcQuote(){
-      const units = getUnits();
-      const days = units>0 ? units/2 : 0;
-      const car = document.querySelector('input[name="carType"]:checked');
-      const type = car ? car.value : null;
-      const base = (days>0 && type) ? Math.round(days * RATES[type]) : 0;
-      const optChild = document.getElementById('optChild').checked ? Math.round(days * OPTION_RATES.childSeatPerDay) : 0;
-      const subtotal = base + optChild;
-      const tax = Math.floor(subtotal * 0.10); // 10%（デモ：切り捨て）
-      const total = subtotal + tax;
-      return { units, days, type, base, optChild, subtotal, tax, total };
+      const units=getUnits();
+      const days=units>0?units/2:0;
+      const car=document.querySelector('input[name="carType"]:checked');
+      const type=car?car.value:null;
+      const base=(days>0&&type)?days*RATES[type]:0;
+      const optChild=document.getElementById('optChild').checked?days*OPTION_RATES.childSeatPerDay:0;
+      const subtotal=base+optChild;
+      const tax=Math.floor(subtotal*0.10); // 10%（切り捨て）
+      const total=subtotal+tax;
+      return{units,days,type,base,optChild,subtotal,tax,total};
     }
 
     function renderBreakdown(q){
-      const bd = document.getElementById('breakdown');
-      if(!q || !q.type){ bd.textContent=''; return; }
-      const lines = [];
+      const bd=document.getElementById('breakdown');
+      if(!q||!q.type){bd.textContent='';return;}
+      const lines=[];
       lines.push(`車種(${q.type})\t: ${q.base.toLocaleString()}円`);
       lines.push(`オプション\t: ${q.optChild.toLocaleString()}円`);
       lines.push(`小計\t\t: ${q.subtotal.toLocaleString()}円`);
       lines.push(`消費税(10%)\t: ${q.tax.toLocaleString()}円`);
       lines.push('------------------------------');
       lines.push(`合計\t\t: ${q.total.toLocaleString()}円（税込）`);
-      bd.textContent = lines.join('\n');
+      bd.textContent=lines.join('\n');
     }
 
     function updateEstimate(){
-      const q = calcQuote();
+      const q=calcQuote();
       if(q.units>0){
-        diffEl.textContent = `利用コマ: ${q.units}（半日単位）／日換算: ${q.days}日`;
-      }else{
-        diffEl.textContent = '';
-      }
+        diffEl.textContent=`利用コマ: ${q.units}（半日単位）／日換算: ${q.days}日`;
+      }else{diffEl.textContent='';}
       if(q.type){
-        estimateEl.textContent = `概算料金: ${q.total.toLocaleString()}円（税込）`;
+        estimateEl.textContent=`料金お見積り: ${q.total.toLocaleString()}円（税込）`;
       }else{
-        estimateEl.textContent = '概算料金: 0円（税込）';
+        estimateEl.textContent='料金お見積り: 0円（税込）';
       }
       if(!document.getElementById('breakdown').classList.contains('hidden')){
         renderBreakdown(q);
       }
     }
 
-    startEl.addEventListener('change',updateConstraints);
+    // イベント
+    startEl.addEventListener('change',updateEstimate);
     endEl.addEventListener('change',updateEstimate);
-    document.getElementById('optChild').addEventListener('change',updateEstimate);
     document.getElementById('startPeriod').addEventListener('change',updateEstimate);
     document.getElementById('endPeriod').addEventListener('change',updateEstimate);
+    document.getElementById('optChild').addEventListener('change',updateEstimate);
 
-    // 「上記内容で予約する」ボタンで詳細欄表示
+    // 詳細入力の開閉
     document.getElementById('showMoreBtn').addEventListener('click',()=>{
       document.getElementById('moreFields').style.display='block';
       document.getElementById('showMoreBtn').style.display='none';
@@ -254,30 +250,22 @@
     document.getElementById('toggleBreakdownBtn').addEventListener('click',()=>{
       const el=document.getElementById('breakdown');
       el.classList.toggle('hidden');
-      document.getElementById('toggleBreakdownBtn').textContent = el.classList.contains('hidden') ? '内訳を表示' : '内訳を隠す';
-      if(!el.classList.contains('hidden')){
-        renderBreakdown(calcQuote());
-      }
+      document.getElementById('toggleBreakdownBtn').textContent=el.classList.contains('hidden')?'内訳を表示':'内訳を隠す';
+      if(!el.classList.contains('hidden')){renderBreakdown(calcQuote());}
     });
 
-    // 郵便番号入力で住所自動入力（簡易デモ）
+    // 郵便番号 → 住所（簡易デモ）
     document.getElementById('zip').addEventListener('blur',()=>{
       const zip=document.getElementById('zip').value.replace(/[^0-9]/g,'');
       const addr=document.getElementById('addrAuto');
-      if(zip.startsWith('100')){
-        addr.value='東京都千代田区';
-      }else if(zip.startsWith('150')){
-        addr.value='東京都渋谷区';
-      }else if(zip.startsWith('160')){
-        addr.value='東京都新宿区';
-      }else if(zip.startsWith('394')){
-        addr.value='長野県諏訪市';
-      }else{
-        addr.value='';
-      }
+      if(zip.startsWith('100')) addr.value='東京都千代田区';
+      else if(zip.startsWith('150')) addr.value='東京都渋谷区';
+      else if(zip.startsWith('160')) addr.value='東京都新宿区';
+      else if(zip.startsWith('394')) addr.value='長野県諏訪市';
+      else addr.value='';
     });
 
-    // フォーム送信
+    // 送信（デモ）
     const form=document.getElementById('bookingForm');
     form.addEventListener('submit',e=>{
       e.preventDefault();
@@ -293,13 +281,14 @@
         address:form.addrAuto.value,
         addressDetail:form.addrMore.value,
         mobile:form.tel.value,
+        agreePrivacy:document.getElementById('agreePrivacy').checked,
         childSeat:form.optChild.checked
       };
       document.getElementById('result').style.display='block';
       document.getElementById('result').textContent=JSON.stringify(data,null,2);
     });
 
-    // 初期見積もり表示
+    // 初期計算
     updateEstimate();
   </script>
 </body>
