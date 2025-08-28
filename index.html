@@ -56,11 +56,19 @@
         <div class="date-field">
           <label for="dateStart">ご利用開始日</label>
           <input id="dateStart" name="dateStart" type="date" required>
+          <select id="startPeriod" aria-label="開始時間帯" style="margin-top:8px;padding:8px;border:1px solid #ccc;border-radius:8px;">
+            <option value="AM" selected>午前（AM）</option>
+            <option value="PM">午後（PM）</option>
+          </select>
         </div>
         <span>〜</span>
         <div class="date-field">
           <label for="dateEnd">ご利用終了日</label>
           <input id="dateEnd" name="dateEnd" type="date" required>
+          <select id="endPeriod" aria-label="終了時間帯" style="margin-top:8px;padding:8px;border:1px solid #ccc;border-radius:8px;">
+            <option value="AM">午前（AM）</option>
+            <option value="PM" selected>午後（PM）</option>
+          </select>
         </div>
       </div>
       <div id="daysDiff" class="days-diff"></div>
@@ -156,30 +164,41 @@
       updateEstimate();
     }
 
-    function getDays(){
+    function getUnits(){
       if(startEl.value && endEl.value){
-        const s=new Date(startEl.value);
-        const e=new Date(endEl.value);
-        if(e>=s){
-          return Math.ceil((e-s)/(1000*60*60*24))+1;
-        }
+        const s = new Date(startEl.value);
+        const e = new Date(endEl.value);
+        const msPerDay = 24*60*60*1000;
+        const dayDiff = Math.round((e - s)/msPerDay);
+        const startOffset = (document.getElementById('startPeriod').value === 'PM') ? 1 : 0;
+        const endOffset   = (document.getElementById('endPeriod').value === 'PM') ? 1 : 0;
+        let units = dayDiff*2 + (endOffset - startOffset) + 1;
+        if(units < 1) units = 1;
+        return units;
       }
       return 0;
     }
 
+    function getDays(){
+      const units = getUnits();
+      return units>0 ? units/2 : 0;
+    }
+
     function updateEstimate(){
-      const days=getDays();
-      if(days>0){
-        diffEl.textContent=`利用日数: ${days}日`;
+      const units = getUnits();
+      if(units>0){
+        const days = units/2;
+        diffEl.textContent = `利用コマ: ${units}（半日単位）／日換算: ${days}日`;
       }else{
-        diffEl.textContent='';
+        diffEl.textContent = '';
       }
       const car=document.querySelector('input[name="carType"]:checked');
       if(car){
         const type=car.value;
         const rates={"軽自動車":5000,"普通車":6600,"小型ミニバン":8800,"大型ミニバン":13000};
         let price=0;
-        if(days>0){
+        if(units>0){
+          const days = units/2;
           price=days*rates[type];
           if(document.getElementById('optChild').checked){
             price+=days*500;
@@ -196,6 +215,8 @@
     startEl.addEventListener('change',updateConstraints);
     endEl.addEventListener('change',updateEstimate);
     document.getElementById('optChild').addEventListener('change',updateEstimate);
+    document.getElementById('startPeriod').addEventListener('change',updateEstimate);
+    document.getElementById('endPeriod').addEventListener('change',updateEstimate);
 
     // 「上記内容で予約する」ボタンで詳細欄表示
     document.getElementById('showMoreBtn').addEventListener('click',()=>{
@@ -227,6 +248,8 @@
       const data={
         startDate:form.dateStart.value,
         endDate:form.dateEnd.value,
+        startPeriod:document.getElementById('startPeriod').value,
+        endPeriod:document.getElementById('endPeriod').value,
         days:getDays(),
         carType:form.carType.value,
         name:form.name.value,
